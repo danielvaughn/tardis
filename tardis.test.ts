@@ -6,7 +6,7 @@ describe("Tardis", () => {
     const initial = {
       items: [{ id: 1, name: "Item 1" }],
     };
-    const tardis = new Tardis(initial);
+    const tardis = new Tardis(initial, 1000, () => {});
     tardis.do("append", ["items", 1], { id: 2, name: "Item 2" });
     expect(initial.items.length).toBe(2);
     expect(initial.items[1]).toEqual({ id: 2, name: "Item 2" });
@@ -24,7 +24,7 @@ describe("Tardis", () => {
     const initial = {
       user: { name: "John", age: 30 },
     };
-    const tardis = new Tardis(initial);
+    const tardis = new Tardis(initial, 1000, () => {});
     tardis.do("replace", ["user", "name"], "Jane");
     expect(initial.user.name).toBe("Jane");
     tardis.undo();
@@ -37,7 +37,7 @@ describe("Tardis", () => {
     const initial = {
       tags: ["one", "two", "three"],
     };
-    const tardis = new Tardis(initial);
+    const tardis = new Tardis(initial, 1000, () => {});
     tardis.do("delete", ["tags", 1]);
     expect(initial.tags).toEqual(["one", "three"]);
     tardis.undo();
@@ -50,7 +50,7 @@ describe("Tardis", () => {
     const initial = {
       users: [{ id: 1, settings: { theme: "light" } }],
     };
-    const tardis = new Tardis(initial);
+    const tardis = new Tardis(initial, 1000, () => {});
     tardis.do("replace", ["users", 0, "settings", "theme"], "dark");
     expect(initial.users[0]?.settings.theme).toBe("dark");
     tardis.undo();
