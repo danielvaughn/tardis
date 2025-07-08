@@ -2,58 +2,114 @@ import { expect, test, describe } from "bun:test";
 import { Tardis } from "./tardis";
 
 describe("Tardis", () => {
-  test("should append data and handle undo/redo", () => {
-    const initial = {
+  test("should be able to perform array insertions", () => {
+    const data = {
       items: [{ id: 1, name: "Item 1" }],
     };
-    const tardis = new Tardis(initial, 1000, () => {});
-    tardis.do("append", ["items", 1], { id: 2, name: "Item 2" });
-    expect(initial.items.length).toBe(2);
-    expect(initial.items[1]).toEqual({ id: 2, name: "Item 2" });
+    const tardis = new Tardis(data, 1000, () => {});
 
-    tardis.undo();
-    expect(initial.items.length).toBe(1);
-    expect(initial.items[0]).toEqual({ id: 1, name: "Item 1" });
+    tardis.do("insert", ["items", 1], { id: 2, name: "Item 2" });
 
-    tardis.redo();
-    expect(initial.items.length).toBe(2);
-    expect(initial.items[1]).toEqual({ id: 2, name: "Item 2" });
+    expect(data.items[1]).toEqual({ id: 2, name: "Item 2" });
   });
 
-  test("should handle replace operations", () => {
-    const initial = {
+  test("should be able to undo array insertions", () => {
+    const data = {
+      items: [{ id: 1, name: "Item 1" }],
+    };
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("insert", ["items", 1], { id: 2, name: "Item 2" });
+    tardis.undo();
+
+    expect(data.items.length).toBe(1);
+  });
+
+  test("should be able to redo array insertions", () => {
+    const data = {
+      items: [{ id: 1, name: "Item 1" }],
+    };
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("insert", ["items", 1], { id: 2, name: "Item 2" });
+    tardis.undo();
+    tardis.redo();
+
+    expect(data.items[1]).toEqual({ id: 2, name: "Item 2" });
+  });
+
+  test("should handle update operations against objects", () => {
+    const data = {
       user: { name: "John", age: 30 },
     };
-    const tardis = new Tardis(initial, 1000, () => {});
-    tardis.do("replace", ["user", "name"], "Jane");
-    expect(initial.user.name).toBe("Jane");
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("update", ["user", "name"], "Jane");
+
+    expect(data.user.name).toBe("Jane");
+  });
+
+  test("should be able to undo update operations against objects", () => {
+    const data = {
+      user: { name: "John", age: 30 },
+    };
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("update", ["user", "name"], "Jane");
     tardis.undo();
-    expect(initial.user.name).toBe("John");
+
+    expect(data.user.name).toBe("John");
+  });
+
+  test("should be able to redo update operations against objects", () => {
+    const data = {
+      user: { name: "John", age: 30 },
+    };
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("update", ["user", "name"], "Jane");
+    tardis.undo();
     tardis.redo();
-    expect(initial.user.name).toBe("Jane");
+
+    expect(data.user.name).toBe("Jane");
+  });
+
+  test("should handle update operations against arrays", () => {
+    const data = {
+      items: ["a", "b", "c", "d"],
+    };
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("update", ["items", 2], "z");
+
+    expect(data.items).toEqual(["a", "b", "z", "d"]);
+    tardis.undo();
+    expect(data.items).toEqual(["a", "b", "c", "d"]);
+    tardis.redo();
+    expect(data.items).toEqual(["a", "b", "z", "d"]);
   });
 
   test("should handle delete operations", () => {
-    const initial = {
+    const data = {
       tags: ["one", "two", "three"],
     };
-    const tardis = new Tardis(initial, 1000, () => {});
+    const tardis = new Tardis(data, 1000, () => {});
     tardis.do("delete", ["tags", 1]);
-    expect(initial.tags).toEqual(["one", "three"]);
+    expect(data.tags).toEqual(["one", "three"]);
     tardis.undo();
-    expect(initial.tags).toEqual(["one", "two", "three"]);
+    expect(data.tags).toEqual(["one", "two", "three"]);
     tardis.redo();
-    expect(initial.tags).toEqual(["one", "three"]);
+    expect(data.tags).toEqual(["one", "three"]);
   });
 
   test("should handle nested operations", () => {
-    const initial = {
+    const data = {
       users: [{ id: 1, settings: { theme: "light" } }],
     };
-    const tardis = new Tardis(initial, 1000, () => {});
-    tardis.do("replace", ["users", 0, "settings", "theme"], "dark");
-    expect(initial.users[0]?.settings.theme).toBe("dark");
+    const tardis = new Tardis(data, 1000, () => {});
+    tardis.do("update", ["users", 0, "settings", "theme"], "dark");
+    expect(data.users[0]?.settings.theme).toBe("dark");
     tardis.undo();
-    expect(initial.users[0]?.settings.theme).toBe("light");
+    expect(data.users[0]?.settings.theme).toBe("light");
   });
 });

@@ -1,6 +1,6 @@
 import { History } from "./history.ts";
 
-type CommandType = "append" | "replace" | "delete";
+type CommandType = "insert" | "update" | "delete";
 
 type Command = {
   batch_id: string;
@@ -43,7 +43,7 @@ export class Tardis<T> {
     return ref;
   }
 
-  private append(
+  private insert(
     path: Array<string | number>,
     data: any,
     batch_id?: string
@@ -61,7 +61,7 @@ export class Tardis<T> {
     return {
       up: {
         batch_id: id,
-        type: "append",
+        type: "insert",
         path,
         data,
       },
@@ -73,7 +73,7 @@ export class Tardis<T> {
     };
   }
 
-  private replace(
+  private update(
     path: Array<string | number>,
     data: any,
     batch_id?: string
@@ -86,19 +86,19 @@ export class Tardis<T> {
     if (typeof lastPathKey === "string") {
       ref[lastPathKey] = data;
     } else {
-      ref.splice(lastPathKey, 0, data);
+      ref.splice(lastPathKey, 1, data);
     }
 
     return {
       up: {
         batch_id: id,
-        type: "replace",
+        type: "update",
         path,
         data,
       },
       down: {
         batch_id: id,
-        type: "replace",
+        type: "update",
         path,
         data: originalData,
       },
@@ -128,7 +128,7 @@ export class Tardis<T> {
       },
       down: {
         batch_id: id,
-        type: "append",
+        type: "insert",
         path,
         data,
       },
@@ -150,11 +150,11 @@ export class Tardis<T> {
     let commandRecord: CommandRecord | null = null;
 
     switch (type) {
-      case "append":
-        commandRecord = this.append(path, data, batch_id);
+      case "insert":
+        commandRecord = this.insert(path, data, batch_id);
         break;
-      case "replace":
-        commandRecord = this.replace(path, data, batch_id);
+      case "update":
+        commandRecord = this.update(path, data, batch_id);
         break;
       case "delete":
         commandRecord = this.delete(path, batch_id);
@@ -177,14 +177,14 @@ export class Tardis<T> {
     const currentBatchId = down.batch_id;
 
     switch (down.type) {
-      case "append":
-        this.append(down.path, down.data, down.batch_id);
+      case "insert":
+        this.insert(down.path, down.data, down.batch_id);
         break;
       case "delete":
         this.delete(down.path, down.batch_id);
         break;
-      case "replace":
-        this.replace(down.path, down.data, down.batch_id);
+      case "update":
+        this.update(down.path, down.data, down.batch_id);
         break;
       default:
         break;
@@ -197,14 +197,14 @@ export class Tardis<T> {
 
       const { down } = previousRecord;
       switch (down.type) {
-        case "append":
-          this.append(down.path, down.data, down.batch_id);
+        case "insert":
+          this.insert(down.path, down.data, down.batch_id);
           break;
         case "delete":
           this.delete(down.path, down.batch_id);
           break;
-        case "replace":
-          this.replace(down.path, down.data, down.batch_id);
+        case "update":
+          this.update(down.path, down.data, down.batch_id);
           break;
         default:
           break;
@@ -225,14 +225,14 @@ export class Tardis<T> {
     const currentBatchId = up.batch_id;
 
     switch (up.type) {
-      case "append":
-        this.append(up.path, up.data, up.batch_id);
+      case "insert":
+        this.insert(up.path, up.data, up.batch_id);
         break;
       case "delete":
         this.delete(up.path, up.batch_id);
         break;
-      case "replace":
-        this.replace(up.path, up.data, up.batch_id);
+      case "update":
+        this.update(up.path, up.data, up.batch_id);
         break;
       default:
         break;
@@ -245,14 +245,14 @@ export class Tardis<T> {
 
       const { up } = nextRecord;
       switch (up.type) {
-        case "append":
-          this.append(up.path, up.data, up.batch_id);
+        case "insert":
+          this.insert(up.path, up.data, up.batch_id);
           break;
         case "delete":
           this.delete(up.path, up.batch_id);
           break;
-        case "replace":
-          this.replace(up.path, up.data, up.batch_id);
+        case "update":
+          this.update(up.path, up.data, up.batch_id);
           break;
         default:
           break;
