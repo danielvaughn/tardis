@@ -3,7 +3,7 @@
 TypeScript library for efficient time-travel against any JSON-serializable object.
 Named after Doctor Who, a being who can travel through time and take any form.
 
-## about
+## About
 
 Most undo/redo libraries simply treat your application state as immutable,
 opting to copy the entire state on every change.
@@ -16,7 +16,7 @@ then specify how you want to change it.
 This requires a bit more thought up-front,
 but the benefit is that you don't need to think about how to unwind state.
 
-## how to use
+## How to use
 
 1. Define your state
 
@@ -46,7 +46,31 @@ tardis.undo();
 tardis.redo();
 ```
 
-## current state
+## Other operations
+
+Tardis allows 3 operations: `insert`, `update`, and `delete`.
+
+```ts
+// update
+const data = {
+  user: { name: "John", age: 30 },
+};
+const tardis = new Tardis(data);
+
+tardis.do("update", ["user", "name"], "Jane"); // data.user.name is now "Jane"
+```
+
+```ts
+// delete
+const data = {
+  tags: ["a", "b", "c"],
+};
+const tardis = new Tardis(data);
+
+tardis.do("delete", ["tags", 1]); // data.tags is now ["a", "c"]
+```
+
+## Current state
 
 I originally built this as an internal module for [Matry](https://github.com/matry),
 but will likely discard it for an XML-based approach.
@@ -54,7 +78,7 @@ It's a neat idea, I just don't have a current use for it and will probably not c
 
 Feel free to fork!
 
-## getting started
+## Getting started
 
 To install dependencies:
 
