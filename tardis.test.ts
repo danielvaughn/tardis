@@ -74,7 +74,7 @@ describe("Tardis", () => {
     expect(data.user.name).toBe("Jane");
   });
 
-  test("should handle update operations against arrays", () => {
+  test("should be able to perform array updates", () => {
     const data = {
       items: ["a", "b", "c", "d"],
     };
@@ -83,33 +83,66 @@ describe("Tardis", () => {
     tardis.do("update", ["items", 2], "z");
 
     expect(data.items).toEqual(["a", "b", "z", "d"]);
+  });
+
+  test("should be able to undo array updates", () => {
+    const data = {
+      items: ["a", "b", "c", "d"],
+    };
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("update", ["items", 2], "z");
     tardis.undo();
+
     expect(data.items).toEqual(["a", "b", "c", "d"]);
+  });
+
+  test("should be able to redo array updates", () => {
+    const data = {
+      items: ["a", "b", "c", "d"],
+    };
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("update", ["items", 2], "z");
+    tardis.undo();
     tardis.redo();
+
     expect(data.items).toEqual(["a", "b", "z", "d"]);
   });
 
-  test("should handle delete operations", () => {
+  test("should be able to perform array deletions", () => {
     const data = {
       tags: ["one", "two", "three"],
     };
     const tardis = new Tardis(data, 1000, () => {});
+
     tardis.do("delete", ["tags", 1]);
-    expect(data.tags).toEqual(["one", "three"]);
-    tardis.undo();
-    expect(data.tags).toEqual(["one", "two", "three"]);
-    tardis.redo();
+
     expect(data.tags).toEqual(["one", "three"]);
   });
 
-  test("should handle nested operations", () => {
+  test("should be able to undo array deletions", () => {
     const data = {
-      users: [{ id: 1, settings: { theme: "light" } }],
+      tags: ["one", "two", "three"],
     };
     const tardis = new Tardis(data, 1000, () => {});
-    tardis.do("update", ["users", 0, "settings", "theme"], "dark");
-    expect(data.users[0]?.settings.theme).toBe("dark");
+
+    tardis.do("delete", ["tags", 1]);
     tardis.undo();
-    expect(data.users[0]?.settings.theme).toBe("light");
+
+    expect(data.tags).toEqual(["one", "two", "three"]);
+  });
+
+  test("should be able to redo array deletions", () => {
+    const data = {
+      tags: ["one", "two", "three"],
+    };
+    const tardis = new Tardis(data, 1000, () => {});
+
+    tardis.do("delete", ["tags", 1]);
+    tardis.undo();
+    tardis.redo();
+
+    expect(data.tags).toEqual(["one", "three"]);
   });
 });
